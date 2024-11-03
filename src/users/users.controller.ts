@@ -6,6 +6,8 @@ import { UserEntity } from './entities/user.entity';
 import { UserSignInDto } from './dto/user-signin.dto';
 import { CurrentUser } from 'src/utils/decorators/current-user.decorator';
 import { AuthenticationGuard } from 'src/utils/guards/authentication.guard';
+import {  authorizeGuard } from 'src/utils/guards/authorization.guard';
+import { Roles } from 'src/utils/common/user-roles.enum';
 
 @Controller('users')
 export class UsersController {
@@ -24,9 +26,12 @@ export class UsersController {
     const user = await this.usersService.signin(userSignInDto);
     const accessToken = await this.usersService.generateJwtToken(user);
 
+    console.log('accessToken', accessToken);
+
     return {accessToken, user};
   }
 
+  @UseGuards(AuthenticationGuard, authorizeGuard([Roles.ADMIN]))
   @Get('all')
   async findAll(): Promise<UserEntity[]> {
     return await this.usersService.findAll();
